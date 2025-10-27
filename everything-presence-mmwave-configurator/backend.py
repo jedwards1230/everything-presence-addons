@@ -373,15 +373,16 @@ def websocket_proxy(ws):
     proxy_active = True
     
     def ha_on_open(ha_ws_instance):
-        supervisor_token = os.environ.get('SUPERVISOR_TOKEN')
-        if supervisor_token:
+        # Use SUPERVISOR_TOKEN if available, otherwise fall back to HA_TOKEN for standalone mode
+        token = os.environ.get('SUPERVISOR_TOKEN') or os.environ.get('HA_TOKEN')
+        if token:
             auth_message = {
                 "type": "auth",
-                "access_token": supervisor_token
+                "access_token": token
             }
             ha_ws_instance.send(json.dumps(auth_message))
         else:
-            logging.error("No supervisor token available for WebSocket auth")
+            logging.error("No authentication token available for WebSocket auth")
     
     def ha_on_message(ha_ws_instance, message):
         # Filter and forward HA messages to frontend
