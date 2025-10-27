@@ -32,7 +32,7 @@ elif HA_URL:
     HA_WS_URL = f"{ws_base.rstrip('/')}/api/websocket"
 else:
     logging.error('No Home Assistant configuration found. Set either SUPERVISOR_TOKEN or both HA_URL and HA_TOKEN.')
-    HA_WS_URL = None
+    sys.exit(1)
 
 if SUPERVISOR_TOKEN:
     HOME_ASSISTANT_API = 'http://supervisor/core/api'
