@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/command/with-contenv sh
 set -e
 
 exec python3 /app/backend.py
