@@ -23,6 +23,17 @@ SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN')
 HA_URL = os.getenv('HA_URL')
 HA_TOKEN = os.getenv('HA_TOKEN')
 
+# WebSocket URL configuration - support both Supervisor and standalone modes
+if SUPERVISOR_TOKEN:
+    HA_WS_URL = 'ws://supervisor/core/websocket'
+elif HA_URL:
+    # Derive WebSocket URL from HTTP URL for standalone mode
+    ws_base = HA_URL.replace('http://', 'ws://').replace('https://', 'wss://')
+    HA_WS_URL = f"{ws_base.rstrip('/')}/api/websocket"
+else:
+    logging.error('No Home Assistant configuration found. Set either SUPERVISOR_TOKEN or both HA_URL and HA_TOKEN.')
+    sys.exit(1)
+
 if SUPERVISOR_TOKEN:
     HOME_ASSISTANT_API = 'http://supervisor/core/api'
     headers = {
@@ -436,7 +447,7 @@ def websocket_proxy(ws):
         proxy_active = False
     
     # Start HA WebSocket connection
-    ha_ws = websocket.WebSocketApp('ws://supervisor/core/websocket',
+    ha_ws = websocket.WebSocketApp(HA_WS_URL,
                                    on_open=ha_on_open,
                                    on_message=ha_on_message,
                                    on_error=ha_on_error,

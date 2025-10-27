@@ -43,21 +43,24 @@ jobs:
           fi
       - name: Set Image Tags
         run: |
+          # Convert repository name to lowercase for GHCR
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           if [ "${{ github.event_name }}" == "push" ]; then
-            echo "IMAGE_TAG=${{ secrets.DOCKERHUB_USERNAME }}/everything-presence-mmwave-configurator:${{ env.VERSION }}" >> $GITHUB_ENV
-            echo "LATEST_TAG=${{ secrets.DOCKERHUB_USERNAME }}/everything-presence-mmwave-configurator:latest" >> $GITHUB_ENV
+            echo "IMAGE_TAG=ghcr.io/${REPO_LOWER}/mmwave-configurator:${{ env.VERSION }}" >> $GITHUB_ENV
+            echo "LATEST_TAG=ghcr.io/${REPO_LOWER}/mmwave-configurator:latest" >> $GITHUB_ENV
           else
             # Use a dummy namespace for PR builds.
             echo "IMAGE_TAG=test/everything-presence-mmwave-configurator:${{ env.VERSION }}" >> $GITHUB_ENV
             echo "LATEST_TAG=test/everything-presence-mmwave-configurator:latest" >> $GITHUB_ENV
           fi
-  
-      - name: Log in to Docker Hub
+
+      - name: Log in to GitHub Container Registry
         if: env.PUSH == 'true'
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and (optionally) Push Docker image
         uses: docker/build-push-action@v4
